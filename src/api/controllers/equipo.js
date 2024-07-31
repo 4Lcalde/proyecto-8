@@ -41,8 +41,8 @@ const updateEquipos = async (req, res, next) => {
     }
 
     if (req.file) {
-      deleteFile(req.body.escudo) // Elimina la imagen anterior
-      req.body.escudo = req.file.path // Actualiza con la nueva imagen
+      deleteFile(req.body.escudo)
+      req.body.escudo = req.file.path
     }
 
     const jugadorActualizado = await Equipo.findByIdAndUpdate(id, req.body, {
