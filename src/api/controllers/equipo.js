@@ -23,27 +23,34 @@ const postEquipos = async (req, res, next) => {
     const equipoSaved = await newEquipo.save()
     return res.status(200).json(equipoSaved)
   } catch (error) {
-    return res.status(400).json('Error al crear equipo')
+    return res.status(400).json(error)
   }
 }
 
 const updateEquipos = async (req, res, next) => {
   try {
     const { id } = req.params
-    const duplicatedEquipo = await Equipo.findOne({ nombre: req.body.nombre })
+
+    const duplicatedEquipo = await Equipo.findOne({
+      nombre: req.body.nombre,
+      _id: { $ne: id }
+    })
+
     if (duplicatedEquipo) {
       return res.status(400).json('El equipo ya existe')
     }
-    const newEquipo = new Equipo(req.body)
 
-    newEquipo._id = id
-    const up = await Equipo.findByIdAndUpdate(id, newEquipo, {
+    if (req.file) {
+      deleteFile(req.body.escudo) // Elimina la imagen anterior
+      req.body.escudo = req.file.path // Actualiza con la nueva imagen
+    }
+
+    const jugadorActualizado = await Equipo.findByIdAndUpdate(id, req.body, {
       new: true
     })
-
-    return res.status(200).json(up)
+    return res.status(200).json(jugadorActualizado)
   } catch (error) {
-    return res.status(400).json('Error al actualizar equipo')
+    return res.status(400).json(error)
   }
 }
 

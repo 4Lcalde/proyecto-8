@@ -31,13 +31,23 @@ const postJugadores = async (req, res, next) => {
 const putJugadores = async (req, res, next) => {
   try {
     const { id } = req.params
-    const duplicatedjugador = await Jugador.findOne({ nombre: req.body.nombre })
-    if (duplicatedjugador) {
+
+    // Verifica si ya existe un jugador con el mismo nombre, excluyendo el actual
+    const duplicatedJugador = await Jugador.findOne({
+      nombre: req.body.nombre,
+      _id: { $ne: id } // Con esto hago que el jugador que se está actualizando no se tenga en cuenta y no aparezca que ya existe
+    })
+
+    if (duplicatedJugador) {
       return res.status(400).json('El jugador ya existe')
     }
-    const newJugador = new Jugador(req.body)
-    newJugador._id = id
-    const jugadorActualizado = await Jugador.findByIdAndUpdate(id, newJugador, {
+
+    if (req.file) {
+      deleteFile(req.body.foto) // Elimina la imagen anterior
+      req.body.foto = req.file.path // Actualiza con la nueva imagen
+    }
+
+    const jugadorActualizado = await Jugador.findByIdAndUpdate(id, req.body, {
       new: true
     })
 
